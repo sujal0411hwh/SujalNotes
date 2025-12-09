@@ -1,0 +1,248 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buy Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .pay-container { max-width: 500px; margin: 40px auto; text-align: center; background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: var(--shadow); width: 90%; }
+        #dynamic-qr { width: 200px; border: 2px solid #333; border-radius: 10px; margin: 15px 0; display: none; }
+        .upi-btn { display: none; width: 100%; padding: 12px; background: #27ae60; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin-bottom: 20px; font-size: 1.1rem; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; background: var(--bg-color); color: var(--text-color); }
+        .note-text { font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 15px; text-align: left; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Sujal<span class="highlight">Notes</span>.</div>
+        <ul class="nav-links"><li><a href="{{ url_for('home') }}">Back</a></li></ul>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="pay-container">
+        <h1>🔓 Buy Notes</h1>
+        <p>Price: <strong>₹49</strong></p>
+
+        <label style="display:block; text-align:left; font-weight:bold; margin-top:10px;">Select Subject First:</label>
+        <select id="subjectSelect" name="subject_code" onchange="updatePaymentLink()" required>
+            <option value="" disabled selected>-- Choose Subject --</option>
+            {% for note in notes %}
+                <option value="{{ note.subject_id }}" {% if selected == note.subject_id %}selected{% endif %}>
+                    {{ note.subject_id }} ({{ note.title }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <div id="paymentArea" style="opacity: 0.5; pointer-events: none; transition: 0.3s;">
+            <p style="font-size: 0.9rem; margin-top: 10px;">Scan to Pay:</p>
+            <img id="dynamic-qr" alt="Scan to Pay">
+            <a id="mobilePayBtn" href="#" class="upi-btn">⚡ Tap to Pay ₹49</a>
+
+            <form method="POST">
+                <input type="hidden" name="subject_code" id="hiddenSubject">
+                <label style="display:block; text-align:left; font-weight:bold; margin-top:20px;">Enter Payment UTR:</label>
+                <input type="text" name="utr" placeholder="Ex: 328910 (Copy from GPay)" required autocomplete="off">
+                <p class="note-text" style="color: #555;">
+                    <i class="fas fa-info-circle"></i> Verification may take 30-60 mins.
+                </p>
+                <button type="submit" class="btn primary-btn" style="width: 100%;">Submit for Review</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const myUpi = "{{ upi_id }}";
+        const myName = "{{ payee_name }}";
+        const amount = "49";
+
+        function updatePaymentLink() {
+            const subject = document.getElementById('subjectSelect').value;
+            const hiddenInput = document.getElementById('hiddenSubject');
+            const paymentArea = document.getElementById('paymentArea');
+            const qrImg = document.getElementById('dynamic-qr');
+            const mobileBtn = document.getElementById('mobilePayBtn');
+
+            if (subject) {
+                hiddenInput.value = subject;
+                paymentArea.style.opacity = "1";
+                paymentArea.style.pointerEvents = "all";
+
+                const note = `Buying ${subject} Notes`;
+                const upiLink = `upi://pay?pa=${myUpi}&pn=${encodeURIComponent(myName)}&am=${amount}&tn=${encodeURIComponent(note)}&cu=INR`;
+
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+                qrImg.style.display = "inline-block";
+                mobileBtn.href = upiLink;
+                
+                if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    mobileBtn.style.display = "inline-block";
+                    qrImg.style.display = "none";
+                }
+            }
+        }
+        document.addEventListener("DOMContentLoaded", updatePaymentLink);
+    </script>
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Checkout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+        }
+        .pay-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .price-tag {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+        select, input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0 20px 0;
+            border: 2px solid transparent;
+            background: var(--bg-color);
+            border-radius: 50px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+            transition: 0.3s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(74, 144, 226, 0.4); }
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar" style="width: 100%; position: absolute; top:0;">
+        <div class="logo">Sujal<span class="highlight">Notes</span>.</div>
+        <ul class="nav-links"><li><a href="{{ url_for('home') }}" style="font-weight: 600;">Back</a></li></ul>
+    </nav>
+
+    <div class="pay-card" style="margin-top: 60px;">
+        <h1 style="font-size: 1.5rem; color: var(--text-color);">Unlock Premium Notes</h1>
+        <div class="price-tag">₹49</div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}" style="margin-bottom: 20px;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label style="display:block; text-align:left; font-weight:700; margin-left: 10px; color: var(--text-light);">1. Select Subject</label>
+            <select id="subjectSelect" name="subject_code" onchange="updatePaymentLink()" required>
+                <option value="" disabled selected>-- Choose Subject --</option>
+                {% for note in notes %}
+                    <option value="{{ note.subject_id }}" {% if selected == note.subject_id %}selected{% endif %}>
+                        {{ note.subject_id }} ({{ note.title }})
+                    </option>
+                {% endfor %}
+            </select>
+
+            <div id="paymentArea" style="opacity: 0.5; pointer-events: none; transition: 0.4s;">
+                
+                <div style="background: var(--bg-color); padding: 15px; border-radius: 16px; margin-bottom: 20px;">
+                    <img id="dynamic-qr" style="width: 180px; border-radius: 10px; display:none;">
+                    <a id="mobilePayBtn" href="#" class="submit-btn" style="display:none; background: #27ae60; text-decoration:none; margin-bottom:0;">
+                        <i class="fas fa-bolt"></i> Tap to Pay
+                    </a>
+                    <p style="font-size:0.8rem; color: var(--text-light); margin-top:10px;">Scan or Click to Pay via UPI</p>
+                </div>
+
+                <input type="hidden" name="subject_code" id="hiddenSubject">
+                
+                <label style="display:block; text-align:left; font-weight:700; margin-left: 10px; color: var(--text-light);">2. Enter UTR (12 Digits)</label>
+                <input type="text" name="utr" placeholder="Ex: 328910293810" required autocomplete="off">
+                
+                <button type="submit" class="submit-btn">Verify & Unlock</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const myUpi = "{{ upi_id }}"; const myName = "{{ payee_name }}"; const amount = "49";
+        function updatePaymentLink() {
+            const subject = document.getElementById('subjectSelect').value;
+            const hiddenInput = document.getElementById('hiddenSubject');
+            const paymentArea = document.getElementById('paymentArea');
+            const qrImg = document.getElementById('dynamic-qr');
+            const mobileBtn = document.getElementById('mobilePayBtn');
+
+            if (subject) {
+                hiddenInput.value = subject;
+                paymentArea.style.opacity = "1";
+                paymentArea.style.pointerEvents = "all";
+                const note = `Buying ${subject} Notes`;
+                const upiLink = `upi://pay?pa=${myUpi}&pn=${encodeURIComponent(myName)}&am=${amount}&tn=${encodeURIComponent(note)}&cu=INR`;
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+                qrImg.style.display = "inline-block";
+                mobileBtn.href = upiLink;
+                if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    mobileBtn.style.display = "inline-block"; qrImg.style.display = "none";
+                }
+            }
+        }
+        document.addEventListener("DOMContentLoaded", updatePaymentLink);
+        
+        // Dark Mode
+        if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+    </script>
+</body>
+</html>

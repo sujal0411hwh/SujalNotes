@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SujalNotes - Secure View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <style>
+        /* (Styles remain the same as before) */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #1a1a1a; color: #ddd; font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; user-select: none; }
+
+        .toolbar { height: 50px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #333; z-index: 100; }
+        .close-btn { color: white; text-decoration: none; font-weight: bold; background: #c0392b; padding: 5px 15px; border-radius: 4px; font-size: 0.8rem; }
+
+        #pdf-container { height: calc(100% - 50px); overflow-y: auto; position: relative; text-align: center; background: #2c2c2c; padding-top: 20px; }
+        canvas { display: block; margin: 0 auto 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 95%; }
+
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 8vw; color: rgba(255, 255, 255, 0.08); pointer-events: none; z-index: 50; font-weight: 900; }
+        .noise-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 60; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"); }
+
+        /* BLACKOUT CURTAIN */
+        #security-curtain {
+            display: none; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98); color: white;
+            z-index: 99999; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+
+        .reload-btn { margin-top: 20px; padding: 12px 30px; background: #27ae60; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .reload-btn:hover { background: #219150; }
+    </style>
+</head>
+<body>
+
+    <div id="security-curtain">
+        <h1 style="font-size: 4rem; margin-bottom: 0;">🚫</h1>
+        <h2>Access Suspended</h2>
+        <p style="color: #bbb; margin-top: 10px;">We detected potential screenshot activity or window switching.</p>
+        <p style="color: #e74c3c; font-weight: bold;">For security, the content has been hidden.</p>
+        
+        <button class="reload-btn" onclick="location.reload()">Reload Page to Continue</button>
+    </div>
+
+    <div class="toolbar">
+        <span class="title">🔒 Secure Viewer</span>
+        <a href="{{ url_for('home') }}" class="close-btn">Close</a>
+    </div>
+
+    <div class="watermark">SUJAL NOTES PRO</div>
+    <div class="noise-overlay"></div>
+
+    <div id="pdf-container"></div>
+
+    <script>
+        // PDF RENDERER
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const url = "{{ url_for('get_pdf_file', semester=semester, filename=filename) }}";
+        const container = document.getElementById('pdf-container');
+
+        async function render() {
+            try {
+                const pdf = await pdfjsLib.getDocument(url).promise;
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    container.appendChild(canvas);
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                }
+            } catch(e) { console.log(e); }
+        }
+        render();
+
+        // --- STRICT SECURITY LOGIC ---
+        const curtain = document.getElementById('security-curtain');
+
+        function lockScreen() {
+            curtain.style.display = 'flex';
+            document.title = "🚫 Access Suspended";
+            // We DO NOT hide it automatically anymore. 
+            // They MUST click the reload button.
+        }
+
+        // 1. Lock on Focus Loss (Alt+Tab, Clicking Snipping Tool)
+        window.addEventListener('blur', lockScreen);
+
+        // 2. Lock on Mouse Leave (Going to dock/taskbar)
+        document.addEventListener('mouseleave', lockScreen);
+
+        // 3. Lock on PrintScreen
+        document.addEventListener('keyup', (e) => {
+            if (e.key == 'PrintScreen') {
+                lockScreen();
+                alert("Screenshots are strictly prohibited.");
+                navigator.clipboard.writeText('');
+            }
+        });
+
+        // 4. Block Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.shiftKey)) {
+                e.preventDefault();
+                lockScreen();
+            }
+        });
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sujal's Notes | Premium Resources</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="blackout"></div>
+
+   <nav class="navbar">
+        <div class="logo">Sujal<span class="highlight">Notes</span>.</div>
+        <ul class="nav-links">
+            <li><a href="#notes-section">Notes</a></li>
+            
+            {% if user.is_authenticated %}
+                <li style="color: var(--text-color); font-weight: 600;">
+                    {{ user.username }} 
+                    {% if user.allowed_notes %} <i class="fas fa-check-circle" style="color:#27ae60"></i> {% endif %}
+                </li>
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt" title="Logout" style="font-size: 1.1rem; color: #e74c3c;"></i></a></li>
+            
+            {% else %}
+                <li><a href="{{ url_for('login') }}" style="font-weight: 600; color: var(--text-color);">Log In</a></li>
+                
+                <li><a href="{{ url_for('login') }}#register" class="btn-upgrade">Sign Up</a></li>
+            {% endif %}
+            
+            <li><button id="theme-toggle"><i class="fas fa-moon"></i></button></li>
+        </ul>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <header id="hero" class="reveal active">
+        <div class="hero-content">
+            <h1>Ace Your Engineering<br>Exams with Ease.</h1>
+            <p>Curated, high-quality notes for Semester 5 & 7. <br>Secure, instant, and trusted by students.</p>
+        </div>
+    </header>
+
+    <div class="features-strip reveal">
+        <div class="feature"><i class="fas fa-bolt"></i> Instant Access</div>
+        <div class="feature"><i class="fas fa-shield-alt"></i> Secure Viewer</div>
+        <div class="feature"><i class="fas fa-check-circle"></i> Syllabus Verified</div>
+    </div>
+
+    <section id="notes-section" class="container">
+        
+        <div class="controls reveal">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search notes...">
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="sem7">Sem 7</button>
+                <button class="filter-btn" data-filter="sem5">Sem 5</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 25px; color: var(--text-light); font-size: 0.9rem;" class="reveal">
+            <i class="fas fa-info-circle"></i> Paid recently? 
+            <a href="#" onclick="location.reload(); return false;" style="color: var(--primary-color); font-weight: bold; text-decoration: underline; cursor: pointer;">
+                Click to Refresh
+            </a>
+        </div>
+
+        <div class="notes-grid" id="notesGrid">
+            {% for note in notes %}
+            <div class="note-card reveal" data-category="{{ note.semester }}">
+                <div class="card-header {{ note.semester }}">{{ note.semester|upper }}</div>
+                <div class="card-body">
+                    <h3>{{ note.title }}</h3>
+                    <p class="topic">{{ note.topic }}</p>
+                    
+                    {% if user.is_authenticated and note.subject_id in access_list %}
+                        <a href="{{ url_for('view_note', semester=note.semester, filename=note.filename) }}" target="_blank" class="download-btn">
+                            <i class="fas fa-eye"></i> View Online
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('upgrade', subject=note.subject_id) }}" class="download-btn locked">
+                            <i class="fas fa-lock"></i> Buy for ₹49
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if not notes %}
+            <p style="text-align: center; color: #777; width: 100%;">No notes found. Check 'protected_notes' folder.</p>
+            {% endif %}
+        </div>
+    </section>
+    
+    <footer class="reveal">
+        <p style="text-align:center; padding: 40px; color: var(--text-light);">
+            &copy; 2025 SujalNotes. <br>Built for Excellence.
+        </p>
+    </footer>
+
+    <script>
+        window.userData = {
+            isAuthenticated: {{ 'true' if user.is_authenticated else 'false' }},
+            currentAccess: "{{ user.allowed_notes if user.is_authenticated else '' }}"
+        };
+
+        // --- SCROLL ANIMATION SCRIPT ---
+        // This makes elements "pop up" when you scroll to them
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        });
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+            observer.observe(el);
+        });
+    </script>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
