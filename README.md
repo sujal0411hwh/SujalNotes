@@ -48,47 +48,26 @@ Built with **Flask**, **SQLite/Postgres**, **flask-login**, and a **protected PD
 
 ## 📸 Screenshots
 
-### 🔐 Login / Register Page
+## 📸 Screenshots
 
-*(Add screenshot here)*
+### 📝 Sign Up / Login
+![Signup](screenshots/signup.png)
 
-```
-![Login Page](screenshots/login.png)
-```
-
-### 🏠 Notes Dashboard
-
-*(Add screenshot here)*
-
-```
+### 🏠 Dashboard
 ![Dashboard](screenshots/dashboard.png)
-```
 
 ### 💳 Payment & UTR Submission
-
-*(Add screenshot here)*
-
-```
 ![Payment](screenshots/payment.png)
-```
 
-### 🔒 Secure Viewer (Screenshot Detection)
+### 🔒 Secure Viewer (Screenshot Protection)
+![Viewer](screenshots/viewer.png)
 
-Your screenshot-blocker works — this is **great to show in README**.
-
-```
-![Secure Viewer Warning](screenshots/secure_viewer_warning.png)
-```
-
-### 🛡️ Admin Panel
-
-*(Add screenshot here)*
-
-```
-![Admin Panel](screenshots/admin.png)
-```
+### 🛡 Admin Panel
+![Admin](screenshots/admin.png)
 
 ---
+
+
 
 ## 🗂 Project Structure
 
