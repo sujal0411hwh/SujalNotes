@@ -137,7 +137,7 @@ def logout():
 def upgrade():
     selected = request.args.get('subject', '')
     
-    MY_UPI_ID = "sujalvachhani@okhdfcbank" 
+    MY_UPI_ID = "sujuvachhani@oksbi" 
     MY_NAME = "Sujal Vachhani"
 
     if request.method == 'POST':
